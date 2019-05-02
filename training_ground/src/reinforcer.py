@@ -6,6 +6,7 @@ from src import config
 from src import testrunner
 from src import utils
 from src import experience
+from src import gym_interactor
 
 
 class Reinforcer:
@@ -15,6 +16,7 @@ class Reinforcer:
         self.tests = []
         self.experience = experience.Experience()
         self.baselines = {"compile_time": {}, "execution_time": {}}
+        self.gym_interactor = gym_interactor.Interactor()
 
     def measure_baseline(self, flags, rerun=False):
         logging.info("Measuring baseline")
@@ -64,12 +66,16 @@ class Reinforcer:
                  self.__sufficient_test("execution_time", test)]
         logging.info("Checked tests")
 
+        test_number = 0
         while True:
             logging.info("Run random")
             result = testrunner.run_random(tests)
             reward = self.calculate_reward(result)
+            comp_time, exec_time = result.compile_time, result.execution_time
             logging.info("Reward: %s", reward)
             self.experience.approve(reward)
+            self.gym_interactor.send_test_result(test_number, result)
+            test_number += 1
 
     def __sufficient_test(self, category, test):
         baseline = self.baselines[category][str(test)]

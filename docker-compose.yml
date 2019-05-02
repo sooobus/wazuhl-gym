@@ -17,6 +17,17 @@ services:
     depends_on: ['mongo']
     networks: ['gym']
 
+  runner:
+    build: ./runner
+    container_name: runner
+    volumes:
+      - ./runner/notebooks:/notebooks
+    ports:
+      - '5000:5000'
+      - '1303:1303'
+    depends_on: ['mongo']
+    networks: ['gym']
+
   mongo:
     image: mongo
     container_name: mongo

@@ -3,6 +3,15 @@
 
 #include "llvm/Wazuhl/Random.h"
 
+
+#include <bsoncxx/builder/stream/document.hpp>
+#include <bsoncxx/json.hpp>
+
+#include <mongocxx/client.hpp>
+#include <mongocxx/instance.hpp>
+
+
+
 namespace llvm {
 namespace wazuhl {
 namespace rl {
@@ -18,6 +27,7 @@ public:
   void learn() {
     State S = Environment.getState();
     while (!Environment.isInTerminalState()) {
+      //llvm::errs() << "COUNT " << ApprovedRecords.count_documents({}) << "\n";
       Action A = Policy.pick(S);
       Environment.takeAction(A);
       State newS = Environment.getState();
@@ -56,6 +66,37 @@ private:
   const PolicyT &Policy;
 };
 
+
+template <class EnvironmentT, class InteractorT> class GuidedLearning {
+public:
+  using Action = typename EnvironmentT::Action;
+  using State = typename EnvironmentT::State;
+  GuidedLearning(EnvironmentT &Environment, InteractorT &Interactor)
+      : Environment(Environment), Interactor(Interactor) {}
+
+  void learn() {
+    State S = Environment.getState();
+    Interactor.sendState(S, false, -1);
+    auto Done = Environment.isInTerminalState();
+    while(!Done) {
+      auto action_id = Interactor.getNextAction();
+      Action A = action_id.first;
+      int i = action_id.second;
+      Environment.takeAction(A);
+      S = Environment.getState();
+      Done = Environment.isInTerminalState();
+      llvm::errs() << "DONE " << Done << "\n";
+      Interactor.sendState(S, Done, i);
+    }
+    llvm::errs() << "Learning finished\n";
+  }
+
+private:
+  EnvironmentT &Environment;
+  InteractorT &Interactor;
+};
+
+
 template <template <class...> class Learner, class EnvironmentT,
           class FunctionT, class PolicyT, class... Args>
 Learner<EnvironmentT, FunctionT, PolicyT>
@@ -64,6 +105,15 @@ createLearner(EnvironmentT &Environment, FunctionT &ValueFunction,
   return Learner<EnvironmentT, FunctionT, PolicyT>{Environment, ValueFunction,
                                                    Policy, args...};
 }
+
+template <template <class...> class Learner, class EnvironmentT, class InteractorT,
+          class... Args>
+Learner<EnvironmentT, InteractorT>
+createLearner(EnvironmentT &Environment, InteractorT &Interactor,
+              Args... args) {
+  return Learner<EnvironmentT, InteractorT>{Environment, Interactor, args...};
+}
+
 
 namespace policies {
 template <class Function> class Greedy {

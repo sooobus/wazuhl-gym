@@ -30,9 +30,7 @@ add_definitions(
 
 add_llvm_library(LLVMWazuhl
   Config.cpp
-  DQN.cpp
   Environment.cpp
-  ExperienceReplay.cpp
   FeatureCollector.cpp
   Manager.cpp
   NormalizedTimer.cpp

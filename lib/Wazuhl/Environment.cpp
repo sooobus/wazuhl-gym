@@ -35,8 +35,7 @@ Environment::State Environment::getState() { return Current; }
 
 void Environment::updateState() {
   auto IRFeatures = AM.getResult<ModuleFeatureCollector>(IR);
-  Current.setIRFeatures(IRFeatures / InitialIRState);
-  Current.setDiffIRFeatures((IRFeatures - InitialIRState) / InitialIRState);
+  Current.setIRFeatures(IRFeatures.data());
   Current.setTime(NormalizedTimer::getTime());
 }
 
@@ -45,23 +44,19 @@ void Environment::takeAction(const Action &A) {
                << A.getIndex() << "\n";
   ++nTakenActions;
   // terminate actions taking if MaxAllowedActions already taken
-  if (nTakenActions == maxAllowedActions) {
+  //if (nTakenActions == maxAllowedActions) {
+  //  Terminated = true;
+  //}
+  if (A.getName() == "terminal"){
+    llvm::errs() << "Wazuhl is making env terminated \n";
     Terminated = true;
   }
-  auto Pass = A.takeAction();
-  // if pass to run is not there,
-  // it is a terminal action and no passes to be ran
-  if (!Pass) {
-    Terminated = true;
-  } else {
-    // otherwise we should run the pass that repsents
-    // the chosen action
+  else{
+    auto Pass = A.takeAction();
     runPass(Pass, IR, AM, PA);
   }
 
   Current.recordAction(A);
-
-  // collect features representing the state
   updateState();
 }
 

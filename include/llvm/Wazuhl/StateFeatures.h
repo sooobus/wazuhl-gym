@@ -10,29 +10,21 @@ namespace wazuhl {
 
 class StateFeatures {
 public:
-  using StorageType = SmallVector<double, config::NumberOfFeatures>;
+  using StorageType = std::vector<int>;
   using ContextType = SmallVector<unsigned, config::ContextSize>;
 
-  StateFeatures() : Storage(config::NumberOfFeatures) {}
+  StateFeatures() : Storage(0) {};
 
-  void setIRFeatures(ArrayRef<double> Features) {
-    assert(Features.size() == config::NumberOfIRFeatures);
-    for (unsigned i = 0; i < config::NumberOfIRFeatures; ++i) {
-      Storage[i] = Features[i];
-    }
-    init();
-  }
-
-  void setDiffIRFeatures(ArrayRef<double> Features) {
-    assert(Features.size() == config::NumberOfIRFeatures);
-    for (unsigned i = 0; i < config::NumberOfIRFeatures; ++i) {
-      Storage[config::DiffIRFeaturesOffset + i] = Features[i];
+  void setIRFeatures(ArrayRef<int> Features) {
+    Storage.clear();
+    for (unsigned i = 0; i < Features.size(); ++i) {
+      Storage.push_back(Features[i]);
     }
     init();
   }
 
   void setTime(double time) {
-    Storage[config::TimeIndex] = time;
+    //Storage[config::TimeIndex] = time;
     init();
   }
 

@@ -79,12 +79,13 @@ class Test:
         with open(os.devnull, 'wb') as devnull:
             make_command = ['make', '-j1', self.name]
             logging.debug(make_command)
-            make_output = subprocess.run(make_command,  env=self.suite.configuration_env,
-                                         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            logging.debug(make_output)
-            logging.debug("reading output")
-            out = make_output.stdout.decode('utf-8')
-            logging.debug(out)
+            #make_output = subprocess.run(make_command,  env=self.suite.configuration_env,
+            #                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            subprocess.run(make_command,  env=self.suite.configuration_env)
+            #logging.debug(make_output)
+            #logging.debug("reading output")
+            #out = make_output.stdout.decode('utf-8')
+            #logging.debug(out)
 
     def run(self):
         if self.suite.fake_run:

@@ -16,27 +16,30 @@ class CollectorImpl : public InstVisitor<CollectorImpl> {
 public:
 #define HANDLE_INST(N, OPCODE, CLASS)                                          \
   void visit##OPCODE(CLASS &) {                                                \
-    ++CollectedFeatures[N];                                                    \
+    CollectedFeatures.push_back(N);                                            \
     ++TotalInsts;                                                              \
   }
 #include "llvm/IR/Instruction.def"
 
   CollectorImpl()
-      : CollectedFeatures(NumberOfFeatures), TotalInsts(CollectedFeatures[0]) {}
+      : TotalInsts(0) {
 
-  RawFeatureVector &&getCollectedFeatures() {
+  }
+
+  std::vector<int> &&getCollectedFeatures() {
     return std::move(CollectedFeatures);
   }
 
 private:
-  RawFeatureVector CollectedFeatures;
-  double &TotalInsts;
+  std::vector<int> CollectedFeatures;
+  //RawFeatureVector CollectedFeatures;
+  double TotalInsts;
 };
 } // namespace
 
 namespace llvm {
 namespace wazuhl {
-RawFeatureVector FunctionFeatureCollector::run(Function &F,
+std::vector<int> FunctionFeatureCollector::run(Function &F,
                                                FunctionAnalysisManager &) {
   CollectorImpl Collector;
   Collector.visit(F);

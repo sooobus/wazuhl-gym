@@ -21,7 +21,10 @@ namespace wazuhl {
   private:
     bool Training;
     bool DebugLogging;
+    bool AlreadyRun = false;
   };
+
+
 
 }
 

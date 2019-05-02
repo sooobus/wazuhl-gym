@@ -657,6 +657,7 @@ ModulePassManager PassBuilder::buildLTODefaultPipeline(OptimizationLevel Level,
 
   ModulePassManager MPM(DebugLogging);
   if (Level == OW) {
+    llvm::errs() << "Added Wazuhl pass \n";
     MPM.addPass(wazuhl::Manager(PGOOpt ? PGOOpt->TrainWazuhl : false));
     return MPM;
   }
