@@ -1,6 +1,7 @@
 import logging
 import pickle
 import os
+import random
 
 from src import config
 from src import testrunner
@@ -40,6 +41,11 @@ class Reinforcer:
         nones = [p for p in self.baselines["compile_time"]
                  if self.baselines["compile_time"][p] is None]
         logging.info(nones)
+        logging.info(self.baselines["compile_time"])
+
+        #del self.baselines["compile_time"]["XSBench"]
+        #del self.baselines["execution_time"]["XSBench"]
+        #self.tests =
         assert None not in self.baselines["compile_time"].values(), "None in test"
 
     def calculate_reward(self, test):
@@ -69,9 +75,10 @@ class Reinforcer:
         test_number = 0
         while True:
             logging.info("Run random")
-            result = testrunner.run_random(tests)
+            t = random.choice(tests)
+            self.gym_interactor.send_intended_test_id(test_number, t)
+            result = testrunner.run_test(t, self.gym_interactor, test_number)
             reward = self.calculate_reward(result)
-            comp_time, exec_time = result.compile_time, result.execution_time
             logging.info("Reward: %s", reward)
             self.experience.approve(reward)
             self.gym_interactor.send_test_result(test_number, result)
@@ -87,9 +94,9 @@ class Reinforcer:
         compilation_tests = set(self.baselines["compile_time"].keys())
         execution_tests = set(self.baselines["execution_time"].keys())
         message = "Etalon tests ({0}) differ from the ones for Wazuhl!"
-        if tests != compilation_tests:
+        if not tests.issubset(compilation_tests):
             utils.error(message.format("compilation"))
-        if tests != execution_tests:
+        if not tests.issubset(execution_tests):
             utils.error(message.format("execution"))
         assert len(tests) > 0, "Test suite is empty!"
 

@@ -32,9 +32,11 @@ def run_random(tests):
     return run_test(test)
 
 
-def run_test(test):
+def run_test(test, interactor=None, index=0):
     logging.debug("Compile test %s", test)
     test.compile()
+    if interactor:
+        interactor.send_compiled(index, test)
     logging.debug("Run test %s", test)
     test.run()
     logging.debug("Cleanup test %s", test)
