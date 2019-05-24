@@ -2,3 +2,6 @@ pymongo
 numpy
 gym
 jupyter
+tqdm
+matplotlib
+seaborn
