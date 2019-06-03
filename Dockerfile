@@ -23,6 +23,7 @@ ADD mongo-cxx-driver /mongo-cxx-driver
 RUN apt-get update && apt-get install -y python3
 RUN apt-get update && apt-get install -y python3-pip
 
+RUN pip install -r /wazuhl/training_ground/requirements.txt
 # Caffe dependencies.
 RUN apt-get update && apt-get install -y build-essential cmake git pkg-config libprotobuf-dev libleveldb-dev libsnappy-dev libhdf5-serial-dev protobuf-compiler libatlas-base-dev
 RUN apt-get update && apt-get install -y --no-install-recommends libboost-all-dev
