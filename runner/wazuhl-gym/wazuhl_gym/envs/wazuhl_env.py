@@ -28,7 +28,7 @@ class WazuhlEnv(gym.Env):
         idx, state, done = self.interactor.get_state()
         logging.info("State len: {}".format(len(state)))
         logging.info("Done: {}".format(done))
-        reward = 0
+        reward = (0, 0)
         if done:
             self.last_step_terminal = True
             rewards = self.interactor.get_rewards()
@@ -43,16 +43,18 @@ class WazuhlEnv(gym.Env):
         self.last_exec_time = exec_time
         if not compile_time and not exec_time:
             return None
-        return -(compile_time + exec_time)
+        return (compile_time, exec_time)
 
     def get_last_compile_exec_time(self):
         return self.last_compile_time, self.last_exec_time
 
+    def get_name(self):
+        return self.interactor.get_name()
+
     def reset(self):
         if not self.last_step_terminal:
             self.step_name("terminal")
-        logging.info("Env reset")
-
+        return self.step_name("empty")
 
     def render(self, mode='human'):
         pass

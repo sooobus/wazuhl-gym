@@ -6,7 +6,7 @@ import logging
 
 
 logging.basicConfig()
-logging.getLogger().setLevel(logging.DEBUG)
+logging.getLogger().setLevel(logging.WARNING)
 
 
 class Interactor:
@@ -20,6 +20,7 @@ class Interactor:
         self.intended_cases = self.db["intended_cases"]
         self.compiled_cases = self.db["compiled_cases"]
         self.next_index = 0
+        self.last_name = ""
 
     def _get_state(self, index):
         record = self.states.find_one({"index": index})
@@ -57,15 +58,21 @@ class Interactor:
             record = self.test_results.find_one({"index": i})
             new_ts = time.time()
         if not record:
-            return None, None
+            return None, None, None
         compile_time, exec_time = record["compile_time"], record["exec_time"]
-        return compile_time, exec_time
+        test_name = record["test_name"]
+        return compile_time, exec_time, test_name
 
     def get_rewards(self): #can be called only once per done
         record = self.intended_cases.find_one(sort=[("index", DESCENDING)])
         logging.debug("Current case: {}".format(record["index"]))
         assert record
-        return self._get_rewards(record["index"])
+        compile_time, exec_time, name = self._get_rewards(record["index"])
+        self.last_name = name
+        return compile_time, exec_time
+
+    def get_name(self):
+        return self.last_name
 
     def get_possible_actions(self):
         record = self.possible_actions.find_one({})
