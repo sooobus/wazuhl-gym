@@ -204,7 +204,8 @@ PassActionList createAllPossibleActions() {
 #undef CGSCC_PASS_OR_ANALYSIS
 #undef FUNCTION_PASS_OR_ANALYSIS
 #undef LOOP_PASS_OR_ANALYSIS
-      {"terminal", [] { return nullptr; }} /// this is a terminal action
+      {"terminal", [] { return nullptr; }}, /// this is a terminal action
+      {"empty", [] { return nullptr; }} /// this is an empty action
   };
   auto FilteredListOfActions =
       make_filter_range(EverySinglePossiblePass,

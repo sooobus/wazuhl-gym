@@ -51,6 +51,9 @@ void Environment::takeAction(const Action &A) {
     llvm::errs() << "Wazuhl is making env terminated \n";
     Terminated = true;
   }
+  else if (A.getName() == "empty"){
+    llvm::errs() << "Wazuhl is not doing any passes\n";
+  }
   else{
     auto Pass = A.takeAction();
     runPass(Pass, IR, AM, PA);
