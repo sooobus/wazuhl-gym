@@ -1,3 +1,8 @@
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+import torch.optim as optim
+
 class BaseModel(nn.Module):
     def __init__(self, vocab, actions_vocab, hid_size=256, emb_size=128, batch_size=64):
         super(BaseModel, self).__init__()
