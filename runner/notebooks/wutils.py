@@ -9,6 +9,7 @@ import torch.optim as optim
 
 Record = namedtuple('Record', ['init_state', 'taken_actions', 'compile_time', 'exec_time', 'test_name'])
 Batch = namedtuple('Batch', ['state', 'actions', 'state_lens', 'target'])
+ModelInfo = namedtuple('ModelInfo', ['model', 'state_vocab', 'actions_vocab', 'bpe_order'])
 
 
 def get_n_trajectories(env, n, length):
@@ -71,7 +72,7 @@ def construct_bpe_from_substitutions(sequences, subs):
     sequences = [[(el, ) for el in s] for s in sequences]
     for pair in subs:
         new_sequences = []
-        print(pair)
+        #print(pair)
         for seq in sequences:
             new_seq = []
             skip = False
@@ -140,3 +141,16 @@ def generate_batches(data, batch_size, limit=10, bpe_iterations=100, state_len_t
                          torch.tensor(state_lens[i1:i2], dtype=torch.float32),
                          torch.tensor(targets[i1:i2], dtype=torch.float32)))
     return res, (vocab, actions_vocab, bpe_order)
+
+
+def prepare_state(state, bpe_order, state_vocab, state_len_thres, repeat):
+    encoded_states = construct_bpe_from_substitutions([state], bpe_order)
+    encoded_states = encode_bpe_to_tokens(encoded_states, state_vocab)
+    encoded_states = [state[:state_len_thres] for state in encoded_states]
+    state_lens = np.array([len(state) for state in encoded_states])
+    states = pad_states(encoded_states, state_len_thres)
+    return torch.tensor(states, dtype=torch.long).repeat(repeat, 1), torch.tensor(state_lens, dtype=torch.float32).repeat(repeat, 1)
+
+
+def prepare_actions(actions, actions_vocab):
+    return torch.tensor(encode_bpe_to_tokens(actions, actions_vocab), dtype=torch.long)
