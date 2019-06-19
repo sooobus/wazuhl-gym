@@ -39,6 +39,6 @@ def run_test(test, interactor=None, index=0):
         interactor.send_compiled(index, test)
     logging.debug("Run test %s", test)
     test.run()
-    logging.debug("Cleanup test %s", test)
-    test.clean()
+    #logging.debug("Cleanup test %s", test)
+    #test.clean()
     return test

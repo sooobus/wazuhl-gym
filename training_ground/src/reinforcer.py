@@ -6,7 +6,7 @@ import random
 from src import config
 from src import testrunner
 from src import utils
-from src import experience
+#from src import experience
 from src import gym_interactor
 
 
@@ -15,7 +15,7 @@ class Reinforcer:
         self.suites = suites
         self.alpha = config.get_alpha()
         self.tests = []
-        self.experience = experience.Experience()
+        #self.experience = experience.Experience()
         self.baselines = {"compile_time": {}, "execution_time": {}}
         self.gym_interactor = gym_interactor.Interactor()
 
@@ -80,7 +80,7 @@ class Reinforcer:
             result = testrunner.run_test(t, self.gym_interactor, test_number)
             reward = self.calculate_reward(result)
             logging.info("Reward: %s", reward)
-            self.experience.approve(reward)
+            #self.experience.approve(reward)
             self.gym_interactor.send_test_result(test_number, result)
             test_number += 1
 
