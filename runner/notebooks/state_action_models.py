@@ -4,6 +4,14 @@ from tqdm import tqdm_notebook as tqdm
 from wutils import prepare_actions, prepare_state
 from itertools import combinations
 import random
+from models.o2actions import o2actions
+
+import torch
+import torch.nn as nn
+import torch.optim as optim
+import torch.nn.functional as F
+from torch.autograd import Variable
+
 
 class BaseComparableModel:
     def __init__(self, name):
@@ -27,6 +35,57 @@ class RandomActionsModel(BaseComparableModel):
             return "terminal"
         else:
             return np.random.choice(self.possible_actions)
+
+
+class O2ActionsModel(BaseComparableModel):
+    def __init__(self):
+        super(O2ActionsModel, self).__init__("O2 Actions")
+        self.call_cnt = 0
+        self.o2actions = o2actions
+
+    def __call__(self, state):
+        action = self.o2actions[self.call_cnt]
+        if action == "terminal":
+            self.call_cnt = 0
+        else:
+            self.call_cnt += 1
+        return action
+
+
+class O0ActionsModel(BaseComparableModel):
+    def __init__(self):
+        super(O0ActionsModel, self).__init__("O0 Actions")
+
+    def __call__(self, state):
+        return "terminal"
+
+
+
+class DropKeepActorCriticActionsModel(BaseComparableModel):
+    def __init__(self, actor_critic, o2dict):
+        super(DropKeepActorCriticActionsModel, self).__init__("DropKeepActorCriticActionsModel")
+        self.actor_critic = actor_critic
+        self.o2dict = o2dict
+        self.o2seq = o2actions
+        self.step_counter = 0
+
+    def __call__(self, state):
+        value, policy_dist = self.actor_critic(torch.tensor(state,
+                                                            dtype=torch.long).view(1, len(state)),
+                                               torch.tensor(self.o2dict[self.o2seq[self.step_counter]],
+                                                            dtype=torch.long).view(1, 1))
+        value = value.detach().numpy()[0,0]
+        dist = policy_dist.detach().numpy()
+        skip = np.random.choice(2, p=np.squeeze(dist))
+        if self.step_counter >= len(self.o2seq) - 1:
+            action = "terminal"
+            self.step_counter = -1
+        elif skip:
+            action = self.o2seq[self.step_counter]
+        else:
+            action = "empty"
+        self.step_counter += 1
+        return action
 
 
 class SupervisedActionsGenerator(BaseComparableModel):
